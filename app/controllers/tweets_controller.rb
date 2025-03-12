@@ -1,7 +1,7 @@
 class TweetsController < ApplicationController
   
   def index
-    per_page = 5
+    per_page = 10
     current_index = Tweet.last.id
 
     per_page = search_params[:per_page]&.to_i if search_params[:per_page].present?
@@ -17,7 +17,7 @@ class TweetsController < ApplicationController
     next_index = nil if next_index < 1
 
     render json: {
-      tweets: tweets.as_json(only: [:id, :content, :created_at, :user_id]),
+      tweets: tweets.as_json(only: [:id, :body, :created_at, :user_id]),
       next_index: next_index
     }
   end
