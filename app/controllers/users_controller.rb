@@ -10,7 +10,7 @@ class UsersController < ApplicationController
   private
 
   def search_params
-    params.permit(:username)
+    params.permit(:username, :company_identifier)
   end
 
 end
