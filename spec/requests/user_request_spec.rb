@@ -14,6 +14,8 @@ RSpec.describe "Users", type: :request do
         create(:user, company: company_2)
       end
     end
+
+    let!(:users) { User.all }
   end
 
   describe "#index" do
@@ -26,7 +28,21 @@ RSpec.describe "Users", type: :request do
         get company_users_path(company_1)
         
         expect(result.size).to eq(company_1.users.size)
-        expect(result.map { |element| element['id'] } ).to eq(company_1.users.ids)
+        expect(result.map { |element| element['id'] }).to eq(company_1.users.ids)
+      end
+
+      it 'returns all the users with specified username' do
+        get company_users_path(company_1), params: { username: company_1.users.first.display_name }
+
+        expect(result.size).to eq(company_1.users.where(display_name: company_1.users.first.display_name).count)
+        expect(result.map { |element| element['id'] }).to match_array(company_1.users.where(display_name: company_1.users.first.display_name).pluck(:id)) 
+      end
+      
+      it 'returns all the users with partial username' do
+        get company_users_path(company_2), params: { username: company_2.users.first.display_name[0..2] }
+
+        expect(result.size).to eq(company_2.users.where('display_name LIKE ?', "%#{company_2.users.first.display_name[0..2]}%").count)
+        expect(result.map { |element| element['id'] }).to match_array(company_2.users.where('display_name LIKE ?', "%#{company_2.users.first.display_name[0..2]}%").pluck(:id)) 
       end
     end
 
@@ -34,7 +50,24 @@ RSpec.describe "Users", type: :request do
       include_context 'with multiple companies'
 
       it 'returns all the users' do
+        get users_path
 
+        expect(result.size).to eq(users.size)
+        expect(result.map { |element| element['id'] }).to eq(users.ids)
+      end
+
+      it 'returns all the users with specified username' do
+        get users_path, params: { username: company_1.users.first.display_name }
+
+        expect(result.size).to eq(users.where(display_name: company_1.users.first.display_name).count)
+        expect(result.map { |element| element['id'] }).to match_array(users.where(display_name: company_1.users.first.display_name).pluck(:id)) 
+      end
+      
+      it 'returns all the users with partial username' do
+        get users_path, params: { username: company_2.users.first.display_name[0..2] }
+
+        expect(result.size).to eq(users.where('display_name LIKE ?', "%#{company_2.users.first.display_name[0..2]}%").count)
+        expect(result.map { |element| element['id'] }).to match_array(users.where('display_name LIKE ?', "%#{company_2.users.first.display_name[0..2]}%").pluck(:id)) 
       end
     end
   end
