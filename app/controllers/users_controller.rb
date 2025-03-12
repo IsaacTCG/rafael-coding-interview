@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-
+  
   def index
     users = User
               .by_company(search_params[:company_id])
@@ -12,5 +12,4 @@ class UsersController < ApplicationController
   def search_params
     params.permit(:username, :company_id)
   end
-
 end
