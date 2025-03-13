@@ -23,7 +23,9 @@ RSpec.describe "Tweets", type: :request do
         
         default_per_page = 10
         last_index_to_get = tweets.last.id - (default_per_page - 1)
+
         next_index = last_index_to_get - 1
+        next_index = nil if next_index < 1
 
         result_hash = result.transform_keys(&:to_sym)
 
@@ -36,7 +38,9 @@ RSpec.describe "Tweets", type: :request do
         
         per_page = 5
         last_index_to_get = tweets.last.id - (per_page - 1)
+
         next_index = last_index_to_get - 1
+        next_index = nil if next_index < 1
 
         result_hash = result.transform_keys(&:to_sym)
 
@@ -45,11 +49,15 @@ RSpec.describe "Tweets", type: :request do
       end
       
       it 'returns most recent tweets with default per_page and with a next index' do
-        get tweets_path params: { next: 40 }
+        get tweets_path params: { next_index: 30 }
         
         default_per_page = 10
-        last_index_to_get = tweets.last.id - (default_per_page - 1)
+        current_index = 30
+
+        last_index_to_get = tweets.where(id: current_index).first.id - (default_per_page - 1)
+        
         next_index = last_index_to_get - 1
+        next_index = nil if next_index < 1
 
         result_hash = result.transform_keys(&:to_sym)
 
@@ -58,16 +66,38 @@ RSpec.describe "Tweets", type: :request do
       end
       
       it 'returns most recent tweets with per_page and with a next index' do
-        get tweets_path params: { per_page: 20, next: 30 }
+        get tweets_path params: { per_page: 20, next_index: 30 }
         
         default_per_page = 20
-        last_index_to_get = tweets.last.id - (default_per_page - 1)
+        current_index = 30
+        
+        last_index_to_get = tweets.where(id: current_index).first.id - (default_per_page - 1)
+
         next_index = last_index_to_get - 1
+        next_index = nil if next_index < 1
 
         result_hash = result.transform_keys(&:to_sym)
 
         expect(result_hash[:tweets].size).to eq(tweets.order(created_at: :desc).where("id >= ?", last_index_to_get).size)
         expect(result_hash[:tweets].map { |element| element['id'] }).to eq(tweets.order(created_at: :desc).where("id >= ?", last_index_to_get).ids)
+      end
+      
+      it 'the next_index return nil if is less than 1' do
+        get tweets_path params: { per_page: 10, next_index: 10 }
+        
+        default_per_page = 10
+        current_index = 10
+
+        last_index_to_get = tweets.where(id: current_index).first.id - (default_per_page - 1)
+
+        next_index = last_index_to_get - 1
+        next_index = nil if next_index < 1
+
+        result_hash = result.transform_keys(&:to_sym)
+
+        expect(result_hash[:tweets].size).to eq(tweets.order(created_at: :desc).where("id >= ?", last_index_to_get).size)
+        expect(result_hash[:tweets].map { |element| element['id'] }).to eq(tweets.order(created_at: :desc).where("id >= ?", last_index_to_get).ids)
+        expect(result_hash[:next_index]).to eq(next_index)
       end
     end
   end

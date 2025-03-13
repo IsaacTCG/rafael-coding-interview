@@ -3,5 +3,5 @@ class Tweet < ApplicationRecord
   
   scope :newest, -> () { order(created_at: :desc) }
   scope :oldest, -> () { order(created_at: :asc) }
-  scope :by_index, -> (last_index_to_get, current_index) { where("id >= ?", last_index_to_get) if current_index.present? && current_index.positive? }
+  scope :by_user, -> (username) { where(user_id: User.find_by(username: username)&.id) if username.present? }
 end
