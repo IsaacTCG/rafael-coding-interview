@@ -9,13 +9,19 @@ class TweetsController < ApplicationController
     username = search_params[:user_username] if search_params[:user_username].present?
     
     tweets_quantity_visible = current_page * per_page
+    next_page = current_page + 1
 
     tweets = Tweet
                 .newest
                 .by_user(username)
-                .limit(tweets_quantity_visible)
 
-    next_page = current_page + 1
+    last_tweet_identifier = tweets.last.id
+
+    tweets = tweets.limit(tweets_quantity_visible)
+
+    last_tweet_in_limit_identifier = tweets.last.id
+
+    next_page = nil if last_tweet_identifier == last_tweet_in_limit_identifier
 
     render json: {
       tweets: tweets.as_json(only: [:id, :body, :created_at, :user_id]),

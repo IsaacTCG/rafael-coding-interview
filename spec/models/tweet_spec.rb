@@ -28,12 +28,9 @@ RSpec.describe Tweet, type: :model do
     end
 
     context ".by_user" do
-      it "returns the tweets filtered by index if current index exist" do
-        per_page = 10
-        current_page = 1
-        tweets_quantity_visible = current_page * per_page
-
-        expect(Tweet.newest.by_index(last_index_to_get, current_index).first.id).to eq(tweets.order(created_at: :desc).where("id >= ?", last_index_to_get).first.id)
+      it "returns the tweets filtered by user if username params is present" do
+        username = users.first.username
+        expect(Tweet.newest.by_user(User.first.username)).to eq(users.first.tweets.newest)
       end
     end
   end
